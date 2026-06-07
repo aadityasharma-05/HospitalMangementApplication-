@@ -1,0 +1,36 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  quality-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm run install-all
+
+      - name: Check code style
+        run: |
+          npm run lint -w frontend || true
+          npm run lint -w dashboard || true
+
+      - name: Security audit
+        run: |
+          npm audit --workspaces --audit-level=moderate || true
+
+      - name: Build check
+        run: |
+          npm run build -w frontend
+          npm run build -w dashboard

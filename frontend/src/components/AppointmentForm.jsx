@@ -44,6 +44,13 @@ const AppointmentForm = () => {
   }, []);
   const handleAppointment = async (e) => {
     e.preventDefault();
+    
+    // Validation
+    if (!firstName || !lastName || !email || !phone || !nic || !dob || !gender || !appointmentDate || !department || !doctorFirstName || !doctorLastName || !address) {
+      toast.error("Please fill all fields including selecting a doctor!");
+      return;
+    }
+
     try {
       const hasVisitedBool = Boolean(hasVisited);
       const { data } = await axios.post(
@@ -53,7 +60,7 @@ const AppointmentForm = () => {
           lastName,
           email,
           phone,
-          nic,
+          Aadhaar_NO: nic,
           dob,
           gender,
           appointment_date: appointmentDate,
@@ -69,21 +76,21 @@ const AppointmentForm = () => {
         }
       );
       toast.success(data.message);
-      setFirstName(""),
-        setLastName(""),
-        setEmail(""),
-        setPhone(""),
-        setNic(""),
-        setDob(""),
-        setGender(""),
-        setAppointmentDate(""),
-        setDepartment(""),
-        setDoctorFirstName(""),
-        setDoctorLastName(""),
-        setHasVisited(""),
-        setAddress("");
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setPhone("");
+      setNic("");
+      setDob("");
+      setGender("");
+      setAppointmentDate("");
+      setDepartment("Pediatrics");
+      setDoctorFirstName("");
+      setDoctorLastName("");
+      setHasVisited(false);
+      setAddress("");
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to book appointment");
     }
   };
 
@@ -164,54 +171,33 @@ const AppointmentForm = () => {
                 );
               })}
             </select>
-            {/* <select
-              value={`${doctorFirstName} ${doctorLastName}`}
+            <select
+              value={doctorFirstName && doctorLastName ? `${doctorFirstName}|${doctorLastName}` : ""}
               onChange={(e) => {
-                const [firstName, lastName] = e.target.value.split(" ");
-                setDoctorFirstName(firstName);
-                setDoctorLastName(lastName);
+                if (e.target.value) {
+                  const [firstName, lastName] = e.target.value.split("|");
+                  setDoctorFirstName(firstName);
+                  setDoctorLastName(lastName);
+                } else {
+                  setDoctorFirstName("");
+                  setDoctorLastName("");
+                }
               }}
-              disabled={!department}
+              disabled={!department || doctors.filter((doctor) => doctor.doctorDepartment === department).length === 0}
+              required
             >
               <option value="">Select Doctor</option>
               {doctors
                 .filter((doctor) => doctor.doctorDepartment === department)
                 .map((doctor, index) => (
                   <option
-                    value={`${doctor.firstName} ${doctor.lastName}`}
+                    value={`${doctor.firstName}|${doctor.lastName}`}
                     key={index}
                   >
-                    {doctor.firstName} {doctor.lastName}
+                    Dr. {doctor.firstName} {doctor.lastName}
                   </option>
                 ))}
-            </select> */}
-            {/* <select
-              value={JSON.stringify({
-                firstName: doctorFirstName,
-                lastName: doctorLastName,
-              })}
-              onChange={(e) => {
-                const { firstName, lastName } = JSON.parse(e.target.value);
-                setDoctorFirstName(firstName);
-                setDoctorLastName(lastName);
-              }}
-              disabled={!department}
-            > */}
-              {/* <option value="">Select Doctor</option>
-              {doctors
-                .filter((doctor) => doctor.doctorDepartment === department)
-                .map((doctor, index) => (
-                  <option
-                    key={index}
-                    value={JSON.stringify({
-                      firstName: doctor.firstName,
-                      lastName: doctor.lastName,
-                    })}
-                  >
-                    {doctor.firstName} {doctor.lastName}
-                  </option>
-                ))}
-            </select> */}
+            </select>
           </div>
           <textarea
             rows="10"

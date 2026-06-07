@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: hms-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - hms-network
+
+  backend:
+    build: .
+    container_name: hms-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      MONGO_URI: mongodb://admin:password123@mongodb:27017/MERN_STACK_HOSPITAL_MANAGEMENT_SYSTEM_DEPLOYED?authSource=admin
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      FRONTEND_URL_ONE: ${FRONTEND_URL_ONE}
+      FRONTEND_URL_TWO: ${FRONTEND_URL_TWO}
+    depends_on:
+      - mongodb
+    networks:
+      - hms-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  hms-network:
+    driver: bridge
